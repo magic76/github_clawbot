@@ -28,6 +28,9 @@ jobs:
       - name: Install Groq
         run: pip install groq
 
+      - name: Install Dependencies
+        run: pip install groq duckduckgo_search
+
       - name: Run Lobster
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
