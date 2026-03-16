@@ -31,6 +31,8 @@ jobs:
       - name: Run Lobster
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }} # 這行一定要有
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}     # 這行也要有
         run: python lobster_agent.py
 
       - name: Push results
