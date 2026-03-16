@@ -1,28 +1,42 @@
 name: Run Lobster
 on:
-  workflow_dispatch: # 讓你可以手動按按鈕執行
+  workflow_dispatch: 
   schedule:
-    - cron: '0 0 * * *' # 每天凌晨 12 點自動跑
+    - cron: '0 0 * * *'
+
+# 新增：明確宣告需要寫入權限
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # 解決 Node.js 20 棄用警告
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          # 確保抓取所有歷史紀錄，避免 push 失敗
+          fetch-depth: 0 
+          
+      - name: Setup Python
+        uses: actions/setup-python@v5 # 更新到 v5
+        with:
+          python-version: '3.11'
+
       - name: Install Groq
         run: pip install groq
-      - name: Run
+
+      - name: Run Lobster
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: python lobster_agent.py
+
       - name: Push results
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git add .
-          git commit -m "Lobster updated" || exit 0
-          git push
+          # 只有在有變動時才 commit，避免報錯
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Lobster updated: $(date)" && git push)
